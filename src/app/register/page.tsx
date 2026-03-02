@@ -1,68 +1,44 @@
-"use client";
+import { NextRequest, NextResponse } from "next/server";
+import bcrypt from "bcryptjs";
+import dbConnect from "@/utils/dbConnect";
+import User from "@/models/User";
 
-import { useState } from "react";
-import axios from "axios";
+export async function POST(req: NextRequest) {
+  try {
+    await dbConnect();
+    const { name, email, password } = await req.json();
 
-export default function RegisterPage() {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [message, setMessage] = useState("");
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      const res = await axios.post("/api/auth", { name, email, password });
-      setMessage("User registered successfully!");
-    } catch (err: any) {
-      setMessage(err.response?.data?.error || "Registration failed");
+    if (!name || !email || !password) {
+      return NextResponse.json(
+        { error: "Name, email, and password are required" },
+        { status: 400 }
+      );
     }
-  };
 
-  return (
-    <div className="flex items-center justify-center h-screen bg-gray-100">
-      <form
-        onSubmit={handleSubmit}
-        className="bg-white p-8 rounded shadow-md w-full max-w-md"
-      >
-        <h2 className="text-2xl font-bold mb-6 text-center">Register</h2>
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return NextResponse.json({ error: "Email already in use" }, { status: 409 });
+    }
 
-        <label className="block mb-2">Name</label>
-        <input
-          type="text"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          className="w-full p-2 border border-gray-300 rounded mb-4"
-          required
-        />
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-        <label className="block mb-2">Email</label>
-        <input
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="w-full p-2 border border-gray-300 rounded mb-4"
-          required
-        />
+    const newUser = await User.create({
+      name,
+      email,
+      password: hashedPassword,
+    });
 
-        <label className="block mb-2">Password</label>
-        <input
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="w-full p-2 border border-gray-300 rounded mb-4"
-          required
-        />
+    return NextResponse.json({
+      message: "User registered successfully",
+      user: { id: newUser._id, name: newUser.name, email: newUser.email },
+    });
+  } catch (err) {
+    console.error("Registration error:", err);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
+}
 
-        <button
-          type="submit"
-          className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition"
-        >
-          Register
-        </button>
-
-        {message && <p className="mt-4 text-center text-red-600">{message}</p>}
-      </form>
-    </div>
-  );
+// Optional GET route for testing
+export async function GET(req: NextRequest) {
+  return NextResponse.json({ message: "Register API is up!" });
 }
