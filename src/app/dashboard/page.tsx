@@ -1,45 +1,48 @@
-'use client';
+// src/app/dashboard/page.tsx
+"use client";
 
-import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import Chatbot from "@/components/Chatbot";
 
 export default function DashboardPage() {
-  const router = useRouter();
-  const [loading, setLoading] = useState(true);
-
-  // Check if user is authenticated
-  useEffect(() => {
-    const token = localStorage.getItem('authToken');
-    if (!token) {
-      router.push('/login'); // redirect to login if no token
-    } else {
-      setLoading(false); // user is logged in
-    }
-  }, [router]);
-
-  const handleLogout = () => {
-    localStorage.removeItem('authToken'); // remove JWT
-    router.push('/login'); // redirect to login
-  };
-
-  if (loading) return (
-    <div className="flex justify-center items-center h-screen">
-      <p className="text-gray-500 text-lg">Loading...</p>
-    </div>
-  );
-
   return (
-    <div className="max-w-3xl mx-auto p-8">
-      <div className="bg-white shadow-lg rounded-lg p-6">
-        <h1 className="text-2xl font-bold mb-4">Welcome to your Dashboard!</h1>
-        <p className="mb-6 text-gray-700">You are logged in and can access protected content.</p>
-        <button
-          onClick={handleLogout}
-          className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition-colors duration-200"
-        >
-          Logout
-        </button>
-      </div>
+    <div className="min-h-screen bg-gray-50 p-8">
+      {/* Page Header */}
+      <header className="mb-6">
+        <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+        <p className="text-gray-600 mt-1">
+          Welcome to your FinTrack dashboard. Track your finances and interact with your AI assistant here.
+        </p>
+      </header>
+
+      {/* Main Dashboard Cards */}
+      <main className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="bg-white shadow rounded-lg p-6">
+          <h2 className="text-xl font-semibold mb-2">Account Overview</h2>
+          <p className="text-gray-700">View your current balance, recent transactions, and account health.</p>
+        </div>
+
+        <div className="bg-white shadow rounded-lg p-6">
+          <h2 className="text-xl font-semibold mb-2">Investments</h2>
+          <p className="text-gray-700">Monitor your portfolio, market trends, and investment performance.</p>
+        </div>
+
+        <div className="bg-white shadow rounded-lg p-6">
+          <h2 className="text-xl font-semibold mb-2">Budget Tracker</h2>
+          <p className="text-gray-700">Set budgets, track expenses, and see your spending habits over time.</p>
+        </div>
+      </main>
+
+      {/* Optional Additional Section */}
+      <section className="mt-8 bg-white p-6 rounded-lg shadow">
+        <h2 className="text-xl font-semibold mb-2">Notifications</h2>
+        <ul className="list-disc list-inside text-gray-700">
+          <li>No pending alerts</li>
+          <li>All accounts are in good standing</li>
+        </ul>
+      </section>
+
+      {/* Chatbot Window */}
+      <Chatbot />
     </div>
   );
 }
