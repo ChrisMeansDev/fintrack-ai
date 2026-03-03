@@ -1,61 +1,45 @@
-// src/app/login/page.tsx
 'use client';
 
-import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
-export default function LoginPage() {
+export default function DashboardPage() {
   const router = useRouter();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [message, setMessage] = useState('');
+  const [loading, setLoading] = useState(true);
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    const res = await fetch('/api/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password }),
-    });
-
-    const data = await res.json();
-
-    if (res.ok) {
-      // Save JWT token to localStorage
-      localStorage.setItem('authToken', data.token);
-
-      // Show success message
-      setMessage('Login successful! Redirecting to dashboard...');
-
-      // Redirect to protected dashboard
-      setTimeout(() => router.push('/dashboard'), 1000);
+  // Check if user is authenticated
+  useEffect(() => {
+    const token = localStorage.getItem('authToken');
+    if (!token) {
+      router.push('/login'); // redirect to login if no token
     } else {
-      setMessage(data.error || 'Login failed');
+      setLoading(false); // user is logged in
     }
+  }, [router]);
+
+  const handleLogout = () => {
+    localStorage.removeItem('authToken'); // remove JWT
+    router.push('/login'); // redirect to login
   };
 
+  if (loading) return (
+    <div className="flex justify-center items-center h-screen">
+      <p className="text-gray-500 text-lg">Loading...</p>
+    </div>
+  );
+
   return (
-    <div style={{ maxWidth: 400, margin: 'auto', padding: 20 }}>
-      <h1>Login</h1>
-      <form onSubmit={handleLogin}>
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
-        <button type="submit">Login</button>
-      </form>
-      {message && <p>{message}</p>}
+    <div className="max-w-3xl mx-auto p-8">
+      <div className="bg-white shadow-lg rounded-lg p-6">
+        <h1 className="text-2xl font-bold mb-4">Welcome to your Dashboard!</h1>
+        <p className="mb-6 text-gray-700">You are logged in and can access protected content.</p>
+        <button
+          onClick={handleLogout}
+          className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition-colors duration-200"
+        >
+          Logout
+        </button>
+      </div>
     </div>
   );
 }

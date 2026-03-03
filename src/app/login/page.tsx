@@ -1,52 +1,7 @@
-'use client';
-
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { apiPost } from '@/lib/api';  // <-- import the helper
-
 export default function LoginPage() {
-  const router = useRouter();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [message, setMessage] = useState('');
-
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    try {
-      const data = await apiPost('/api/login', { email, password });
-
-      // Save token in localStorage for future requests (api.ts already reads it automatically)
-      localStorage.setItem('authToken', data.token);
-
-      setMessage('Login successful! Redirecting...');
-      setTimeout(() => router.push('/dashboard'), 1000);
-    } catch (err: any) {
-      setMessage(err.message || 'Login failed');
-    }
-  };
-
   return (
-    <div style={{ maxWidth: 400, margin: 'auto', padding: 20 }}>
-      <h1>Login</h1>
-      <form onSubmit={handleLogin}>
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
-        <button type="submit">Login</button>
-      </form>
-      {message && <p>{message}</p>}
+    <div className="bg-gray-50 min-h-screen flex items-center justify-center">
+      <h1 className="text-4xl font-bold text-blue-600">Tailwind is working!</h1>
     </div>
   );
 }

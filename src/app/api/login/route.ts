@@ -1,4 +1,5 @@
 // src/app/api/login/route.ts
+import 'dotenv/config';
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
