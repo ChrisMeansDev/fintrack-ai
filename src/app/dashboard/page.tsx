@@ -1,8 +1,8 @@
+// src/app/login/page.tsx
 'use client';
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { apiPost } from '@/lib/api';  // <-- import the helper
 
 export default function LoginPage() {
   const router = useRouter();
@@ -13,16 +13,25 @@ export default function LoginPage() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    try {
-      const data = await apiPost('/api/login', { email, password });
+    const res = await fetch('/api/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+    });
 
-      // Save token in localStorage for future requests (api.ts already reads it automatically)
+    const data = await res.json();
+
+    if (res.ok) {
+      // Save JWT token to localStorage
       localStorage.setItem('authToken', data.token);
 
-      setMessage('Login successful! Redirecting...');
+      // Show success message
+      setMessage('Login successful! Redirecting to dashboard...');
+
+      // Redirect to protected dashboard
       setTimeout(() => router.push('/dashboard'), 1000);
-    } catch (err: any) {
-      setMessage(err.message || 'Login failed');
+    } else {
+      setMessage(data.error || 'Login failed');
     }
   };
 

@@ -1,44 +1,64 @@
-import { NextRequest, NextResponse } from "next/server";
-import bcrypt from "bcryptjs";
-import dbConnect from "@/utils/dbConnect";
-import User from "@/models/User";
+'use client';
 
-export async function POST(req: NextRequest) {
-  try {
-    await dbConnect();
-    const { name, email, password } = await req.json();
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
-    if (!name || !email || !password) {
-      return NextResponse.json(
-        { error: "Name, email, and password are required" },
-        { status: 400 }
-      );
-    }
+export default function RegisterPage() {
+  const router = useRouter();
+  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [message, setMessage] = useState('');
 
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      return NextResponse.json({ error: "Email already in use" }, { status: 409 });
-    }
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
 
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    const newUser = await User.create({
-      name,
-      email,
-      password: hashedPassword,
+    const res = await fetch('/api/register', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ username, email, password }),
     });
 
-    return NextResponse.json({
-      message: "User registered successfully",
-      user: { id: newUser._id, name: newUser.name, email: newUser.email },
-    });
-  } catch (err) {
-    console.error("Registration error:", err);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
-  }
-}
+    const data = await res.json();
 
-// Optional GET route for testing
-export async function GET(req: NextRequest) {
-  return NextResponse.json({ message: "Register API is up!" });
+    if (res.ok) {
+      setMessage('Registration successful! Redirecting to login...');
+      setTimeout(() => router.push('/login'), 1500);
+    } else {
+      setMessage(data.error || 'Registration failed');
+    }
+  };
+
+  return (
+    <div style={{ maxWidth: 400, margin: 'auto', padding: 20 }}>
+      <h1>Register</h1>
+      <form onSubmit={handleRegister}>
+        <input
+          type="text"
+          placeholder="Username"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          required
+        />
+        <input
+          type="email"
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
+        <input
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
+        <button type="submit">Register</button>
+      </form>
+      {message && <p>{message}</p>}
+    </div>
+  );
 }
